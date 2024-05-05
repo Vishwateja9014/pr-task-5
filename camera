@@ -1,0 +1,60 @@
+import cv2
+from pyzbar.pyzbar import decode
+import webbrowser
+import tkinter as tk
+from tkinter import messagebox
+
+def scan_qr_code():
+    # Initialize camera
+    cap = cv2.VideoCapture(0)
+    
+    while True:
+        # Read frame from camera
+        ret, frame = cap.read()
+        
+        # Decode QR code
+        decoded_objects = decode(frame)
+        
+        # Display frame
+        cv2.imshow('QR Code Scanner', frame)
+        
+        # Check for QR code detection
+        if decoded_objects:
+            # Extract QR code information
+            qr_data = decoded_objects[0].data.decode('utf-8')
+            
+            # Close camera
+            cap.release()
+            cv2.destroyAllWindows()
+            
+            # Show scanned data in messagebox
+            messagebox.showinfo('QR Code Scanned', qr_data)
+            
+            # Check if the scanned data is a URL
+            if qr_data.startswith('http://') or qr_data.startswith('https://'):
+                # Ask user if they want to open the URL
+                open_url = messagebox.askyesno('Open URL', 'Do you want to open the scanned URL?')
+                
+                # Open URL if user confirms
+                if open_url:
+                    webbrowser.open(qr_data)
+            break
+        
+        # Check for 'q' key press to quit
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    # Release camera and close windows
+    cap.release()
+    cv2.destroyAllWindows()
+
+# Create GUI
+root = tk.Tk()
+root.title('QR Code Scanner')
+
+# Create scan button
+scan_button = tk.Button(root, text='Scan QR Code', command=scan_qr_code)
+scan_button.pack(pady=20)
+
+# Run GUI main loop
+root.mainloop()
